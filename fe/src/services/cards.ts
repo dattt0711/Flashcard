@@ -49,9 +49,11 @@ export const cardsService = {
         collectionId: request.collectionId,
         collectionTitle: 'Mock Collection',
         frontText: request.frontText,
-        frontAudioUrl: request.frontAudioUrl,
+        frontAudioId: request.frontAudioId,
+        frontImageId: request.frontImageId,
         backText: request.backText,
-        backAudioUrl: request.backAudioUrl,
+        backAudioId: request.backAudioId,
+        backImageId: request.backImageId,
         createdAt: new Date().toISOString(),
       };
       return {
