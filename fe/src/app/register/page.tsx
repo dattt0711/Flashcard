@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authService } from "@/services";
 import { useAuthStore } from "@/stores/auth-store";
+import { toast } from "sonner";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -26,7 +27,9 @@ export default function RegisterPage() {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      const errorMsg = "Passwords do not match";
+      setError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
@@ -42,12 +45,17 @@ export default function RegisterPage() {
           email: response.data.email,
           username: response.data.username,
         });
+        toast.success("Account created successfully!");
         router.push("/");
       } else {
-        setError(response.message || "Registration failed");
+        const errorMsg = response.message || "Registration failed";
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch {
-      setError("An error occurred. Please try again.");
+      const errorMsg = "An error occurred. Please try again.";
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }

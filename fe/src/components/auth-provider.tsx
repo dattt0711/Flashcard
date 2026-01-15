@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/auth-store";
 import { Loader2 } from "lucide-react";
@@ -19,17 +19,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, isHydrated, hydrate } = useAuthStore();
+  const hasHydrated = useRef(false);
 
-  // Hydrate auth state on mount
+  // Hydrate auth state on mount - only once
   useEffect(() => {
-    hydrate();
+    if (!hasHydrated.current) {
+      hasHydrated.current = true;
+      hydrate();
+    }
   }, [hydrate]);
 
   // Handle route protection
   useEffect(() => {
     if (!isHydrated) return;
 
-    const isPublicRoute = publicRoutes.some((route) => pathname === route);
+    const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith(route + "/"));
     const isAuthRoute = authRoutes.some((route) => pathname === route);
 
     // Redirect authenticated users away from auth pages

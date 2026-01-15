@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authService } from "@/services";
 import { useAuthStore } from "@/stores/auth-store";
+import { toast } from "sonner";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,12 +35,17 @@ export default function LoginPage() {
           email: response.data.email,
           username: response.data.username,
         });
+        toast.success("Welcome back!");
         router.push("/");
       } else {
-        setError(response.message || "Login failed");
+        const errorMsg = response.message || "Login failed";
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch {
-      setError("An error occurred. Please try again.");
+      const errorMsg = "An error occurred. Please try again.";
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsLoading(false);
     }

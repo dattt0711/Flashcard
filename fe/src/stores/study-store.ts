@@ -14,6 +14,7 @@ interface StudyState {
   setCards: (cards: StudyCardResponse[]) => void;
   nextCard: () => void;
   flipCard: () => void;
+  setFlipped: (flipped: boolean) => void;
   recordAnswer: (correct: boolean) => void;
   resetSession: () => void;
   setCurrentIndex: (index: number) => void;
@@ -50,6 +51,10 @@ export const useStudyStore = create<StudyState>((set, get) => ({
 
   flipCard: () => {
     set((state) => ({ isFlipped: !state.isFlipped }));
+  },
+
+  setFlipped: (flipped: boolean) => {
+    set({ isFlipped: flipped });
   },
 
   recordAnswer: (correct: boolean) => {

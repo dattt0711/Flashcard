@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { RotateCcw, ThumbsDown, ThumbsUp, Zap, Volume2 } from "lucide-react";
+import { RotateCcw, ThumbsDown, ThumbsUp, Zap, Volume2, Loader2 } from "lucide-react";
 import { StudyCardResponse, Rating } from "@/types";
 import { studyService } from "@/services";
 import { useStudyStore } from "@/stores/study-store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface StudyFlashcardProps {
   card: StudyCardResponse;
@@ -60,7 +61,29 @@ const ratingButtons: {
 
 export function StudyFlashcard({ card, onAnswered }: StudyFlashcardProps) {
   const [selectedRating, setSelectedRating] = useState<Rating | null>(null);
-  const { isFlipped, flipCard, recordAnswer } = useStudyStore();
+  const [isLoading, setIsLoading] = useState(false);
+  const [displayCard, setDisplayCard] = useState<StudyCardResponse | null>(card);
+  const { isFlipped, flipCard, setFlipped, recordAnswer } = useStudyStore();
+  // When new card data arrives while loading, show it
+  useEffect(() => {
+    if (isLoading && card.cardId !== displayCard?.cardId) {
+      setDisplayCard(card);
+      setIsLoading(false);
+      setSelectedRating(null);
+    }
+  }, [card, isLoading, displayCard?.cardId]);
+
+  const transitionToNextCard = async () => {
+    const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    await delay(450); // Show rating feedback
+    setFlipped(false); // Flip back to front
+    await delay(300); // Wait for flip animation
+    setDisplayCard(null); // Clear card content - show loading
+    setIsLoading(true);
+    setSelectedRating(null);
+    onAnswered(); // Trigger fetch next card
+  };
 
   const reviewMutation = useMutation({
     mutationFn: ({ cardId, rating }: { cardId: string; rating: Rating }) =>
@@ -68,10 +91,12 @@ export function StudyFlashcard({ card, onAnswered }: StudyFlashcardProps) {
     onSuccess: (_, variables) => {
       const isCorrect = variables.rating !== "AGAIN";
       recordAnswer(isCorrect);
-      setTimeout(() => {
-        setSelectedRating(null);
-        onAnswered();
-      }, 600);
+      transitionToNextCard();
+    },
+    onError: (error) => {
+      setSelectedRating(null);
+      toast.error("Failed to submit review. Please try again.");
+      console.error("Review error:", error);
     },
   });
 
@@ -106,7 +131,10 @@ export function StudyFlashcard({ card, onAnswered }: StudyFlashcardProps) {
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">
       {/* Flashcard */}
-      <div className="flip-card h-80 cursor-pointer" onClick={flipCard}>
+      <div
+        className="flip-card h-80 cursor-pointer"
+        onClick={!isLoading ? flipCard : undefined}
+      >
         <div
           className={cn(
             "flip-card-inner relative w-full h-full",
@@ -120,32 +148,41 @@ export function StudyFlashcard({ card, onAnswered }: StudyFlashcardProps) {
               getResultColor()
             )}
           >
-            <div className="absolute top-4 left-4 text-xs text-muted-foreground">
-              {card.collectionTitle}
-            </div>
-            {card.isNew && (
-              <div className="absolute top-4 right-4">
-                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                  New
-                </span>
+            {isLoading ? (
+              <div className="flex flex-col items-center gap-4">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="text-muted-foreground">Loading next card...</p>
               </div>
-            )}
-            {card.frontAudioUrl && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-4 right-4"
-                onClick={(e) => playAudio(card.frontAudioUrl, e)}
-              >
-                <Volume2 className="h-4 w-4" />
-              </Button>
-            )}
-            <h2 className="text-2xl font-bold text-center leading-relaxed">
-              {card.frontText}
-            </h2>
-            <p className="absolute bottom-4 text-sm text-muted-foreground">
-              Tap to reveal answer
-            </p>
+            ) : displayCard ? (
+              <>
+                <div className="absolute top-4 left-4 text-xs text-muted-foreground">
+                  {displayCard.collectionTitle}
+                </div>
+                {displayCard.isNew && (
+                  <div className="absolute top-4 right-4">
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                      New
+                    </span>
+                  </div>
+                )}
+                {displayCard.frontAudioUrl && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-4 right-4"
+                    onClick={(e) => playAudio(displayCard.frontAudioUrl, e)}
+                  >
+                    <Volume2 className="h-4 w-4" />
+                  </Button>
+                )}
+                <h2 className="text-2xl font-bold text-center leading-relaxed">
+                  {displayCard.frontText}
+                </h2>
+                <p className="absolute bottom-4 text-sm text-muted-foreground">
+                  Tap to reveal answer
+                </p>
+              </>
+            ) : null}
           </Card>
 
           {/* Back - Answer */}
@@ -155,28 +192,32 @@ export function StudyFlashcard({ card, onAnswered }: StudyFlashcardProps) {
               getResultColor()
             )}
           >
-            <p className="absolute top-4 left-4 text-sm text-muted-foreground">
-              Answer
-            </p>
-            {card.backAudioUrl && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-4 right-4"
-                onClick={(e) => playAudio(card.backAudioUrl, e)}
-              >
-                <Volume2 className="h-4 w-4" />
-              </Button>
+            {displayCard && (
+              <>
+                <p className="absolute top-4 left-4 text-sm text-muted-foreground">
+                  Answer
+                </p>
+                {displayCard.backAudioUrl && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-4 right-4"
+                    onClick={(e) => playAudio(displayCard.backAudioUrl, e)}
+                  >
+                    <Volume2 className="h-4 w-4" />
+                  </Button>
+                )}
+                <h2 className="text-3xl font-bold text-center text-primary">
+                  {displayCard.backText}
+                </h2>
+              </>
             )}
-            <h2 className="text-3xl font-bold text-center text-primary">
-              {card.backText}
-            </h2>
           </Card>
         </div>
       </div>
 
-      {/* Rating Buttons - Only show when flipped */}
-      {isFlipped && (
+      {/* Rating Buttons - Only show when flipped and card is displayed */}
+      {isFlipped && displayCard && !isLoading && (
         <div className="space-y-3">
           <p className="text-center text-sm text-muted-foreground">
             How well did you know this?

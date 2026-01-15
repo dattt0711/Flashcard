@@ -70,6 +70,10 @@ export const useAuthStore = create<AuthState>()((set) => ({
   },
 
   hydrate: () => {
+    // Prevent multiple hydrations
+    const state = useAuthStore.getState();
+    if (state.isHydrated) return;
+
     if (typeof window === "undefined") {
       set({ isHydrated: true });
       return;
