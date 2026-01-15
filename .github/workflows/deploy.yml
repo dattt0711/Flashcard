@@ -16,7 +16,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /opt/flashcard
+            cd /opt/Flashcard
             git pull origin develop
             docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
             docker system prune -f
