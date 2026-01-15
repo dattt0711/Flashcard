@@ -72,6 +72,7 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_USE_MOCK: "false"
     container_name: flashcard-frontend
     restart: always
     depends_on:
