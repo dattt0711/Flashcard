@@ -124,7 +124,7 @@ services:
     container_name: flashcard-grafana
     restart: always
     ports:
-      - "9091:9091"
+      - "9091:3000"
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:
