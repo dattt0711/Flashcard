@@ -1,0 +1,56 @@
+groups:
+  - name: flashcard-alerts
+    rules:
+      # Application down
+      - alert: ApplicationDown
+        expr: up{job="spring-boot"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Application is down"
+          description: "{{ $labels.instance }} has been down for more than 1 minute"
+
+      # High error rate (>5% of requests are 5xx)
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+          / sum(rate(http_server_requests_seconds_count[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is above 5% for the last 5 minutes"
+
+      # High response time (p99 > 2s)
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket[5m])) by (le)) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High latency detected"
+          description: "99th percentile latency is above 2 seconds"
+
+      # JVM Heap memory > 80%
+      - alert: HighHeapUsage
+        expr: |
+          jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"} > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "JVM Heap usage is high"
+          description: "Heap usage is above 80%"
+
+      # Too many database connections
+      - alert: HighDBConnections
+        expr: hikaricp_connections_active / hikaricp_connections_max > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database connection usage"
+          description: "Using more than 80% of database connection pool"

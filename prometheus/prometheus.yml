@@ -2,12 +2,35 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
+# Alerting rules (optional)
+rule_files:
+  - "alerts.yml"
+
 scrape_configs:
+  # Prometheus self-monitoring
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
 
+  # Spring Boot Backend
   - job_name: 'spring-boot'
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['backend:8080']
+        labels:
+          application: 'flashcard-backend'
+
+  # PostgreSQL (requires postgres_exporter)
+  # - job_name: 'postgresql'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']
+
+  # Nginx (requires nginx-prometheus-exporter)
+  # - job_name: 'nginx'
+  #   static_configs:
+  #     - targets: ['nginx-exporter:9113']
+
+  # Node Exporter (server metrics - CPU, Memory, Disk)
+  # - job_name: 'node'
+  #   static_configs:
+  #     - targets: ['node-exporter:9100']
