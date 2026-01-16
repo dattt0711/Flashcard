@@ -8,7 +8,7 @@
   "liveNow": false,
   "panels": [
     {
-      "datasource": { "type": "prometheus", "uid": null },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "mappings": [
@@ -26,7 +26,7 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": null },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] },
@@ -41,7 +41,7 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": null },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
@@ -56,7 +56,7 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": null },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 10 }, { "color": "red", "value": 100 }] },
@@ -71,7 +71,7 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": null },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.5 }, { "color": "red", "value": 1 }] },
@@ -86,7 +86,7 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": null },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
@@ -101,7 +101,7 @@
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": null },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -123,7 +123,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": null },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -145,7 +145,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": null },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -167,7 +167,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": null },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -189,7 +189,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": null },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -207,7 +207,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": null },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
@@ -230,7 +230,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": null },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": {
         "defaults": {
           "color": { "mode": "palette-classic" },
