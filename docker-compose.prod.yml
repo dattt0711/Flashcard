@@ -106,9 +106,36 @@ services:
       - ./certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
+  # Prometheus (metrics)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: flashcard-prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - flashcard-network
+
+  # Grafana (visualization)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: flashcard-grafana
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - flashcard-network
+
 volumes:
   postgres_data:
   minio_data:
+  grafana_data:
 
 networks:
   flashcard-network:
