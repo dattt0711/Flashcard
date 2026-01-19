@@ -57,9 +57,10 @@ public class StudyServiceImpl implements StudyService {
                     .stream().map(uc -> uc.getCard().getId()).toList();
                 log.debug("Learned card IDs count: {}", learnedCardIds.size());
 
+                int newCardLimit = Math.max(0, limit - dueCards.size());
                 newCards = cardRepository.findByCollectionId(collectionId).stream()
                     .filter(card -> !learnedCardIds.contains(card.getId()))
-                    .limit(limit - dueCards.size())
+                    .limit(newCardLimit)
                     .toList();
                 log.debug("Found {} new cards", newCards.size());
             } else {
