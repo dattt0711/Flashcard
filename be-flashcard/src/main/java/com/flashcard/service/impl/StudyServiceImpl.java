@@ -10,6 +10,7 @@ import com.flashcard.security.SecurityUtils;
 import com.flashcard.service.MediaService;
 import com.flashcard.service.StudyService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StudyServiceImpl implements StudyService {
@@ -35,44 +37,58 @@ public class StudyServiceImpl implements StudyService {
 
     @Override
     public StudySessionResponse getStudySession(UUID collectionId, Integer limit) {
-        UUID userId = SecurityUtils.getCurrentUserId();
-        OffsetDateTime now = OffsetDateTime.now();
+        log.info("getStudySession called with collectionId={}, limit={}", collectionId, limit);
+        try {
+            UUID userId = SecurityUtils.getCurrentUserId();
+            log.debug("userId={}", userId);
+            OffsetDateTime now = OffsetDateTime.now();
 
-        List<UserCard> dueCards;
-        List<Card> newCards = new ArrayList<>();
+            List<UserCard> dueCards;
+            List<Card> newCards = new ArrayList<>();
 
-        if (collectionId != null) {
-            dueCards = userCardRepository.findByUserIdAndCollectionId(userId, collectionId).stream()
-                .filter(uc -> uc.getNextReviewAt() != null && uc.getNextReviewAt().isBefore(now))
-                .toList();
+            if (collectionId != null) {
+                log.debug("Fetching cards for collection: {}", collectionId);
+                dueCards = userCardRepository.findByUserIdAndCollectionId(userId, collectionId).stream()
+                    .filter(uc -> uc.getNextReviewAt() != null && uc.getNextReviewAt().isBefore(now))
+                    .toList();
+                log.debug("Found {} due cards", dueCards.size());
 
-            List<UUID> learnedCardIds = userCardRepository.findByUserIdAndCollectionId(userId, collectionId)
-                .stream().map(uc -> uc.getCard().getId()).toList();
+                List<UUID> learnedCardIds = userCardRepository.findByUserIdAndCollectionId(userId, collectionId)
+                    .stream().map(uc -> uc.getCard().getId()).toList();
+                log.debug("Learned card IDs count: {}", learnedCardIds.size());
 
-            newCards = cardRepository.findByCollectionId(collectionId).stream()
-                .filter(card -> !learnedCardIds.contains(card.getId()))
-                .limit(limit - dueCards.size())
-                .toList();
-        } else {
-            dueCards = userCardRepository.findDueCards(userId, now);
+                newCards = cardRepository.findByCollectionId(collectionId).stream()
+                    .filter(card -> !learnedCardIds.contains(card.getId()))
+                    .limit(limit - dueCards.size())
+                    .toList();
+                log.debug("Found {} new cards", newCards.size());
+            } else {
+                log.debug("No collectionId provided, fetching all due cards for user");
+                dueCards = userCardRepository.findDueCards(userId, now);
+                log.debug("Found {} due cards", dueCards.size());
+            }
+
+            List<StudyCardResponse> studyCards = new ArrayList<>();
+
+            for (UserCard uc : dueCards.stream().limit(limit).toList()) {
+                studyCards.add(mapToStudyCardResponse(uc, false));
+            }
+
+            for (Card card : newCards) {
+                studyCards.add(mapNewCardToStudyCardResponse(card));
+            }
+
+            log.info("getStudySession completed successfully with {} study cards", studyCards.size());
+            return StudySessionResponse.builder()
+                .totalDueCards(dueCards.size())
+                .totalNewCards(newCards.size())
+                .totalReviewCards(dueCards.size())
+                .cards(studyCards)
+                .build();
+        } catch (Exception e) {
+            log.error("Error in getStudySession - collectionId={}, limit={}", collectionId, limit, e);
+            throw e;
         }
-
-        List<StudyCardResponse> studyCards = new ArrayList<>();
-
-        for (UserCard uc : dueCards.stream().limit(limit).toList()) {
-            studyCards.add(mapToStudyCardResponse(uc, false));
-        }
-
-        for (Card card : newCards) {
-            studyCards.add(mapNewCardToStudyCardResponse(card));
-        }
-
-        return StudySessionResponse.builder()
-            .totalDueCards(dueCards.size())
-            .totalNewCards(newCards.size())
-            .totalReviewCards(dueCards.size())
-            .cards(studyCards)
-            .build();
     }
 
     @Override
